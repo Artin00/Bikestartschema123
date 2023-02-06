@@ -14,7 +14,7 @@ df1 = payment_Schema = StructType([ \
                             StructField("payment_id", StringType(), True), \
                             StructField("date", StringType(), True), \
                             StructField("amount",  StringType(), True), \
-                            StructField("account_numer", StringType(), True)])
+                            StructField("rider_id", StringType(), True)])
 
 df2 = trip_schema = StructType ([ \
                              StructField("trip_id", StringType(),True), \
@@ -23,7 +23,7 @@ df2 = trip_schema = StructType ([ \
                              StructField("ended_at", StringType(), True), \
                             StructField("started_station_id", StringType(), True), \
                             StructField("ended_station_id", StringType(), True), \
-                           StructField("member_id", StringType(), True)])
+                           StructField("rider_id", StringType(), True)])
 
 df3 = rider_schema = StructType([ \
                           StructField("rider_id", StringType(), True), \
@@ -31,7 +31,9 @@ df3 = rider_schema = StructType([ \
                           StructField("last", StringType(), True), \
                           StructField("address", StringType(), True), \
                           StructField("birthday", StringType(), True), \
-                          StructField("account_number", StringType(), True)])
+                          StructField("account_start_date", StringType(), True), \
+                          StructField("account_end_date", StringType(), True), \
+                          StructField("is_member", StringType(), True)])
 
 df4 = station_schema = StructType([ \
                             StructField("station_id", StringType(), True), \
