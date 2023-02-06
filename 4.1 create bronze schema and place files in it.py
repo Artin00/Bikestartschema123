@@ -1,5 +1,5 @@
 # Databricks notebook source
-#Creating the files for the schema/tables
+#Creating the files for the schema/tables within the Bronze folder
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Bronze/payment")
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Bronze/trip")
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Bronze/rider")
