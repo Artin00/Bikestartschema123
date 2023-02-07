@@ -129,3 +129,31 @@ display(dfagedone.limit(10))
 dfagedonefr = dfagedone.withColumnRenamed("(datediff / 365.25)","age")
 dfagedonefr1 = dfagedonefr.select(col("age").cast(IntegerType()))
 display(dfagedonefr1.limit(10))
+
+# COMMAND ----------
+
+#Export gold rider file from silver 
+rider = spark.read.load("dbfs:/tmp/Artin/Silver/rider", format = "delta")
+riders = rider.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/dim.rider")
+display(rider.limit(10))
+
+# COMMAND ----------
+
+#Creating the Payment fact table
+pay = spark.read.load("dbfs:/tmp/Artin/Silver/payment", format = "delta")
+date_dim = spark.read.load("dbfs:/tmp/Artin/Gold/dim.date", format = "delta")
+display(pay.limit(10))
+display(date_dim)
+
+
+from pyspark.sql import functions as F
+paym = pay.join(date_dim.select("date_id","date"), on="date", how="left")
+display(paym)
+
+payme = paym.drop("date")
+display(payme)
+
+paymen = payme.select("payment_id", "rider_id", "amount", "date_id")
+display(paymen)
+
+paymen.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/face.payment")
