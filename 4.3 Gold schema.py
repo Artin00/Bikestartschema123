@@ -179,7 +179,7 @@ tra = tr.withColumn("started_at_date", split(tr["started_at"], " ").getItem(0)) 
 display(tra.limit(10))
 
 tria = tra.withColumnRenamed("started_at_date", "date")
-trial = tria.select( "trip_id", "rider_id", col("date").cast(DateType()), "started_at_time", col("ended_at_date").cast(DateType()), "ended_at_time", "started_station_id", "ended_station_id")
+trial = tria.select( "trip_id", "rider_id", "rideable_type", col("date").cast(DateType()), "started_at_time", col("ended_at_date").cast(DateType()), "ended_at_time", "started_station_id", "ended_station_id")
 display(trial.limit(10))
 
 traili = trial.join(date.select("date_id","date"), on = "date", how = "left")
@@ -218,12 +218,15 @@ display(tramline)
 from pyspark.sql.functions import datediff, col, current_date
 from pyspark.sql.types import StringType, IntegerType
 dfrider = spark.read.load("dbfs:/tmp/Artin/Silver/rider", format = "delta")
-dfage = dfrider.select(col("birthday"), current_date().alias("current_date"), datediff(current_date(), col("birthday")).alias("datediff"))
+dfage = dfrider.select(col("birthday"), current_date().alias("current_date"), datediff(current_date(), col("birthday")).alias("datediff"), "rider_id")
 dfage.show()
 
-dfagedone = dfage.select(col("datediff")/365.25).alias("age")
+dfagedone = dfage.select(col("datediff")/365.25, "rider_id")
 display(dfagedone.limit(10))
 
-dfagedonefr = dfagedone.withColumnRenamed("(datediff / 365.25)","age")
-dfagedonefr1 = dfagedonefr.select(col("age").cast(IntegerType()), "rider_id")
+dfagedonefr = dfagedone.withColumnRenamed("(datediff / 365.25)","rider_age")
+dfagedonefr1 = dfagedonefr.select(col("rider_age").cast(IntegerType()), "rider_id")
 display(dfagedonefr1.limit(10))
+
+trampoline = tramline.join(dfagedonefr1.select("rider_id","rider_age"), on = "rider_id", how = "left")
+display(trampoline)
