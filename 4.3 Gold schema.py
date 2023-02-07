@@ -106,3 +106,26 @@ display(dfdatesdone)
 
 dfdatesdone.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/dim.date")
 
+
+# COMMAND ----------
+
+#Add Station to the allocated folder
+df = spark.read.load("dbfs:/tmp/Artin/Silver/station", format = "delta")
+display(df)
+df1 = df.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/dim.station")
+
+# COMMAND ----------
+
+#Creating a column for the trip fact table
+from pyspark.sql.functions import datediff, col, current_date
+from pyspark.sql.types import StringType, IntegerType
+dfrider = spark.read.load("dbfs:/tmp/Artin/Silver/rider", format = "delta")
+dfage = dfrider.select(col("birthday"), current_date().alias("current_date"), datediff(current_date(), col("birthday")).alias("datediff"))
+dfage.show()
+
+dfagedone = dfage.select(col("datediff")/365.25).alias("age")
+display(dfagedone.limit(10))
+
+dfagedonefr = dfagedone.withColumnRenamed("(datediff / 365.25)","age")
+dfagedonefr1 = dfagedonefr.select(col("age").cast(IntegerType()))
+display(dfagedonefr1.limit(10))
