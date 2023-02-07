@@ -51,12 +51,13 @@ df231 = df23.select("rideable_type").distinct()
 display(df231)
 df2313 = df231.select(row_number().over(Window.orderBy(lit(1))).alias("bike_id"), "rideable_type")
 display(df2313)
+df2313.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/dim.bike")
 
 # COMMAND ----------
 
-#Creating Date table as well a time
+#Creating Date table as well the Time table
 from pyspark.sql.window import Window
-from pyspark.sql.functions import split, col, substring, row_number, lit, window
+from pyspark.sql.functions import split, col, substring, row_number, lit, window, to_timestamp
 from pyspark.sql.types import StructType, IntegerType, DateType, DecimalType, VarcharType, TimestampType, BooleanType, FloatType, StructField, StringType
 
 df01 = spark.read.load("dbfs:/tmp/Artin/Silver/trip", format ="delta")
@@ -87,9 +88,21 @@ dftotaldates = dfdates.union(dfpg).distinct()
 dftime = dfsg.select("time1").union(dfsg.select("time2")).distinct().drop("date1","date2")
 display(dftime)
 
+dftimenearlydone = dftime.select("time1", to_timestamp(col("time1"), "HH:mm:ss").cast(TimestampType())) \
+                         .select(row_number().over(Window.orderBy(lit(1))).alias("time_id"),"time1")
+ditimedone = dftimenearlydone.withColumnRenamed("time1","time")
+
+datetimedone = ditimedone
+display(datetimedone)
+
+datetimedone.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/dim.time")
+
 display(dftotaldates)
 
 dfdatesnearlydone = dftotaldates.select(col("date1").cast(DateType())) \
                                 .select(row_number().over(Window.orderBy(lit(1))).alias("date_id"),"date1")
 dfdatesdone = dfdatesnearlydone.withColumnRenamed("date1","date")
 display(dfdatesdone)
+
+dfdatesdone.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/dim.date")
+
