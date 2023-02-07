@@ -1,4 +1,11 @@
 # Databricks notebook source
+dbutils.fs.rm("dbfs:/tmp/Artin/Silver/payment", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Silver/trip", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Silver/rider", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Silver/station", True)
+
+# COMMAND ----------
+
 #Creating the files for the schema/tables within the Silver folder
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Silver/payment")
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Silver/trip")
@@ -9,7 +16,7 @@ dbutils.fs.mkdirs("dbfs:/tmp/Artin/Silver/station")
 
 #Creating the Silver schemas and adding the data from the bronze folder to the silver folder with the changed data types
 from pyspark.sql.types import StructType, IntegerType, DateType, DecimalType, VarcharType, TimestampType, BooleanType, FloatType, StructField, StringType
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, unix_timestamp
 
 #Payment
 payments_bronze = spark.read.format("delta").load("dbfs:/tmp/Artin/Bronze/payment")
@@ -26,9 +33,9 @@ payment_time.printSchema()
 #Trip
 trip_bronze = spark.read.load("dbfs:/tmp/Artin/Bronze/trip", format = "delta")
 tbs = trip_bronze.withColumn("trip_id", col("trip_id").cast(VarcharType(255))) \
-                 .withColumn("ridable_type", col("ridable_type").cast(StringType())) \
-                 .withColumn("started_at", col("started_at").cast(TimestampType())) \
-                 .withColumn("ended_at", col("ended_at").cast(TimestampType())) \
+                 .withColumn("rideable_type", col("rideable_type").cast(StringType())) \
+                 .withColumn("started_at", unix_timestamp(col("started_at"),"dd/MM/yyyy HH:mm").cast(TimestampType())) \
+                 .withColumn("ended_at", unix_timestamp(col("ended_at"),"dd/MM/yyyy HH:mm").cast(TimestampType())) \
                  .withColumn("started_station_id", col("started_station_id").cast(IntegerType())) \
                  .withColumn("ended_station_id", col("ended_station_id").cast(IntegerType())) \
                  .withColumn("rider_id", col("rider_id").cast(IntegerType()))
