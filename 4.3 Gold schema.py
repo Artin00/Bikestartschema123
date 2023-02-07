@@ -64,19 +64,9 @@ df01 = spark.read.load("dbfs:/tmp/Artin/Silver/trip", format ="delta")
 df02 = spark.read.load("dbfs:/tmp/Artin/Silver/payment", format = "delta")
 display(df01)
 display(df02)
-dfp = df02.select(col("date"))
-dfs = df01.select(col("started_at"),col("ended_at"))
-display(dfs)
-display(dfp)  
-dfsg = dfs.withColumn("date1", split(dfs["started_at"], " ").getItem(0)) \
-          .withColumn("time1", split(dfs["started_at"]," ").getItem(1)) \
-          .withColumn("date2", split(dfs["ended_at"], " ").getItem(0)) \
-          .withColumn("time2", split(dfs["ended_at"], " ").getItem(1)) \
-          .drop("started_at","ended_at")
-display(dfsg.limit(10))
+
 
 dfpg = dfp.select(col("date").cast(StringType()))
-
 
 
 dfdate = dfsg.select("date1").union(dfsg.select("date2")).distinct().drop("time1","time2")
@@ -127,7 +117,7 @@ dfagedone = dfage.select(col("datediff")/365.25).alias("age")
 display(dfagedone.limit(10))
 
 dfagedonefr = dfagedone.withColumnRenamed("(datediff / 365.25)","age")
-dfagedonefr1 = dfagedonefr.select(col("age").cast(IntegerType()))
+dfagedonefr1 = dfagedonefr.select(col("age").cast(IntegerType()), "rider_id")
 display(dfagedonefr1.limit(10))
 
 # COMMAND ----------
@@ -157,3 +147,83 @@ paymen = payme.select("payment_id", "rider_id", "amount", "date_id")
 display(paymen)
 
 paymen.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/face.payment")
+
+# COMMAND ----------
+
+#Create the trip fact table
+from pyspark.sql.window import Window
+from pyspark.sql.functions import split, col, substring, row_number, lit, window, to_timestamp
+from pyspark.sql.types import StructType, IntegerType, DateType, DecimalType, VarcharType, TimestampType, BooleanType, FloatType, StructField, StringType
+
+tr = spark.read.load("dbfs:/tmp/Artin/Silver/trip", format = "delta")
+display(tr.limit(10))
+
+bike = spark.read.load("dbfs:/tmp/Artin/Gold/dim.bike", format = "delta")
+display(bike)
+
+date = spark.read.load("dbfs:/tmp/Artin/Gold/dim.date", format = "delta")
+display(date)
+
+time = spark.read.load("dbfs:/tmp/Artin/Gold/dim.time", format = "delta")
+display(time)
+
+
+#Setting up the started_at_date/time and ended_at_date/time columns and connect it to the date table and time table 
+
+tra = tr.withColumn("started_at_date", split(tr["started_at"], " ").getItem(0)) \
+        .withColumn("started_at_time", split(tr["started_at"], " ").getItem(1)) \
+        .withColumn("ended_at_date", split(tr["ended_at"], " "). getItem(0)) \
+        .withColumn("ended_at_time", split(tr["ended_at"], " "). getItem(1)) \
+        .drop("started_at", "ended_at")
+
+display(tra.limit(10))
+
+tria = tra.withColumnRenamed("started_at_date", "date")
+trial = tria.select( "trip_id", "rider_id", col("date").cast(DateType()), "started_at_time", col("ended_at_date").cast(DateType()), "ended_at_time", "started_station_id", "ended_station_id")
+display(trial.limit(10))
+
+traili = trial.join(date.select("date_id","date"), on = "date", how = "left")
+display(traili)
+
+trailis = traili.drop("date")
+trailis = trailis.withColumnRenamed("date_id", "started_at_date_id")
+display(trailis)
+
+train = trailis.withColumnRenamed("ended_at_date","date")
+traine = train.join(date.select("date_id","date"), on = "date", how = "left")
+display(traine)
+
+trainer = traine.drop("date")
+trainer = trainer.withColumnRenamed("date_id", "ended_at_date_id")
+display(trainer)
+
+transp = trainer.withColumnRenamed("started_at_time","time")
+transpo = transp.join(time.select("time_id","time"), on ="time", how = "left")
+display(transpo)
+
+transpor = transpo.drop("time")
+transport = transpor.withColumnRenamed("time_id", "started_at_time_id")
+display(transport)
+
+tram = transport.withColumnRenamed("ended_at_time","time")
+traml = tram.join(time.select("time_id", "time"), on ="time", how = "left")
+display(traml)
+
+tramlin = traml.drop("time")
+tramline = tramlin.withColumnRenamed("time_id", "ended_at_time_id")
+display(tramline)
+
+
+#Adding the rider_age
+from pyspark.sql.functions import datediff, col, current_date
+from pyspark.sql.types import StringType, IntegerType
+dfrider = spark.read.load("dbfs:/tmp/Artin/Silver/rider", format = "delta")
+dfage = dfrider.select(col("birthday"), current_date().alias("current_date"), datediff(current_date(), col("birthday")).alias("datediff"))
+dfage.show()
+
+dfagedone = dfage.select(col("datediff")/365.25).alias("age")
+display(dfagedone.limit(10))
+
+dfagedonefr = dfagedone.withColumnRenamed("(datediff / 365.25)","age")
+dfagedonefr1 = dfagedonefr.select(col("age").cast(IntegerType()), "rider_id")
+display(dfagedonefr1.limit(10))
