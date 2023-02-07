@@ -1,4 +1,11 @@
 # Databricks notebook source
+dbutils.fs.rm("dbfs:/tmp/Artin/Bronze/payment", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Bronze/trip", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Bronze/rider", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Bronze/station", True)
+
+# COMMAND ----------
+
 #Creating the files for the schema/tables within the Bronze folder
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Bronze/payment")
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Bronze/trip")
@@ -18,7 +25,7 @@ df1 = payment_Schema = StructType([ \
 
 df2 = trip_schema = StructType ([ \
                              StructField("trip_id", StringType(),True), \
-                             StructField("ridable_type", StringType(),True), \
+                             StructField("rideable_type", StringType(),True), \
                              StructField("started_at", StringType(),True), \
                              StructField("ended_at", StringType(), True), \
                             StructField("started_station_id", StringType(), True), \
