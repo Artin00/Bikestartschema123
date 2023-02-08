@@ -1,2 +1,2 @@
 # Databricks notebook source
-dbutils.fm.rm("dbfs:/tmp/Artin", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Bronze", True)
