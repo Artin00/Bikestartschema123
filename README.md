@@ -20,6 +20,22 @@ We had to create :
 * Logical database design (!)
 * Physical database design (!)
 
-The one that was used was the physical database design that we had to implement within the Gold layer.
+The physical database design was what I had to implement within the Gold layer.
 
+I had to start off with a basic schema with no data type changes to prevent any loss with the data when being transfered to the Bronze layer.
+
+The second schema that I created can now change the data type to be in accordace with the original data.
+
+Finaly the third schema had to follow the physical database design of the star schema created
+
+##Images
+
+Conceptual database design:
+![Screenshot_20230201_181635](https://user-images.githubusercontent.com/113461257/217527908-6a600cfa-b3d9-4878-969d-4e4bdc1ca584.png)
+
+Logical database design:
+<img width="465" alt="Screenshot_20230202_104833" src="https://user-images.githubusercontent.com/113461257/217527760-1d938049-03e6-46e5-80ae-592d78e0eecf.png">
+
+Physical database design:
+<img width="471" alt="Screenshot_20230202_110739" src="https://user-images.githubusercontent.com/113461257/217527842-a436a793-b414-4941-9817-9dd541af02fb.png">
 
