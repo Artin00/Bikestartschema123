@@ -1,7 +1,6 @@
 # Bikestartschema123 
 
-This project is to try and help a bike sharing program in Chichago, Illinois USA. For their bikeshare solution, I was tasked to create a Star schema to try and help 
-answer some of their business outcomes.
+This project is helping a bike sharing program that's located in Chichago, Illinois USA. For their bikeshare solution, I was tasked to create a Star schema to try and help answer some of their business outcomes.
 
 A general task was to:
 
