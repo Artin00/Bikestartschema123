@@ -1,5 +1,4 @@
 # Bikestartschema123 
-^ Photos are to be ordered chronologically from where '(!)' is shown.
 
 This project is to try and help a bike sharing program in Chichago, Illinois USA. For their bikeshare solution, I was tasked to create a Star schema to try and help 
 answer some of their business outcomes.
@@ -16,9 +15,9 @@ To start of the project I had to figure out what sort of star schema would work 
 
 We had to create :
 
-* Conceptual database design (!)
-* Logical database design (!)
-* Physical database design (!)
+* Conceptual database design 
+* Logical database design 
+* Physical database design 
 
 The physical database design was what I had to implement within the Gold layer.
 
