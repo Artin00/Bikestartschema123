@@ -1,19 +1,4 @@
 # Databricks notebook source
-dbutils.fs.rm("dbfs:/tmp/Artin/Silver/payment", True)
-dbutils.fs.rm("dbfs:/tmp/Artin/Silver/trip", True)
-dbutils.fs.rm("dbfs:/tmp/Artin/Silver/rider", True)
-dbutils.fs.rm("dbfs:/tmp/Artin/Silver/station", True)
-
-# COMMAND ----------
-
-#Creating the files for the schema/tables within the Silver folder
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Silver/payment")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Silver/trip")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Silver/rider")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Silver/station")
-
-# COMMAND ----------
-
 #Creating the Silver schemas and adding the data from the bronze folder to the silver folder with the changed data types
 from pyspark.sql.types import StructType, IntegerType, DateType, DecimalType, VarcharType, TimestampType, BooleanType, FloatType, StructField, StringType
 from pyspark.sql.functions import col, unix_timestamp

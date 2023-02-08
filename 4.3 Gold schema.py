@@ -1,24 +1,4 @@
 # Databricks notebook source
-dbutils.fs.rm("dbfs:/tmp/Artin/Gold/dim.station", True)
-dbutils.fs.rm("dbfs:/tmp/Artin/Gold/dim.date", True)
-dbutils.fs.rm("dbfs:/tmp/Artin/Gold/dim.bike", True)
-dbutils.fs.rm("dbfs:/tmp/Artin/Gold/dim.rider", True)
-dbutils.fs.rm("dbfs:/tmp/Artin/Gold/dim.time", True)
-dbutils.fs.rm("dbfs:/tmp/Artin/Gold/fact.payment", True)
-dbutils.fs.rm("dbfs:/tmp/Artin/Gold/fact.trip", True)
-
-# COMMAND ----------
-
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/dim.station")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/dim.date")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/dim.bike")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/dim.rider")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/dim.time")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/fact.payment")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/fact.trip")
-
-# COMMAND ----------
-
 #Createing Bike Table
 from pyspark.sql.window import Window
 from pyspark.sql.functions import row_number, lit, window

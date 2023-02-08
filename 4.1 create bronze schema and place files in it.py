@@ -1,12 +1,4 @@
 # Databricks notebook source
-#Creating the files for the schema/tables within the Bronze folder
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Bronze/payment")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Bronze/trip")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Bronze/rider")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Bronze/station")
-
-# COMMAND ----------
-
 #Creating the schema for the Bronze folder of each csv files
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
  
