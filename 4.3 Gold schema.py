@@ -65,6 +65,16 @@ df02 = spark.read.load("dbfs:/tmp/Artin/Silver/payment", format = "delta")
 display(df01)
 display(df02)
 
+dfp = df02.select(col("date"))
+dfs = df01.select(col("started_at"),col("ended_at"))
+display(dfs)
+display(dfp)
+dfsg = dfs.withColumn("date1", split(dfs["started_at"], " ").getItem(0)) \
+          .withColumn("time1", split(dfs["started_at"]," ").getItem(1)) \
+          .withColumn("date2", split(dfs["ended_at"], " ").getItem(0)) \
+          .withColumn("time2", split(dfs["ended_at"], " ").getItem(1)) \
+          .drop("started_at","ended_at")
+display(dfsg.limit(10))
 
 dfpg = dfp.select(col("date").cast(StringType()))
 
@@ -146,13 +156,13 @@ display(payme)
 paymen = payme.select("payment_id", "rider_id", "amount", "date_id")
 display(paymen)
 
-paymen.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/face.payment")
+paymen.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/fact.payment")
 
 # COMMAND ----------
 
 #Create the trip fact table
 from pyspark.sql.window import Window
-from pyspark.sql.functions import split, col, substring, row_number, lit, window, to_timestamp
+from pyspark.sql.functions import split, col, substring, row_number, lit, window, to_timestamp, datediff, current_date, round, unix_timestamp, to_utc_timestamp
 from pyspark.sql.types import StructType, IntegerType, DateType, DecimalType, VarcharType, TimestampType, BooleanType, FloatType, StructField, StringType
 
 tr = spark.read.load("dbfs:/tmp/Artin/Silver/trip", format = "delta")
@@ -178,8 +188,16 @@ tra = tr.withColumn("started_at_date", split(tr["started_at"], " ").getItem(0)) 
 
 display(tra.limit(10))
 
-tria = tra.withColumnRenamed("started_at_date", "date")
-trial = tria.select( "trip_id", "rider_id", "rideable_type", col("date").cast(DateType()), "started_at_time", col("ended_at_date").cast(DateType()), "ended_at_time", "started_station_id", "ended_station_id")
+# Working out the trip duration
+tim = tra.withColumn("start_at_time", to_timestamp(col("started_at_time"), "HH:mm:ss")) \
+         .withColumn("end_at_time", to_timestamp(col("ended_at_time"), "HH:mm:ss")) \
+         .withColumn("trip_duration",(unix_timestamp(col("end_at_time")) - unix_timestamp(col("start_at_time")))/60)
+
+timmy = tim.select("trip_id", "rider_id", "rideable_type", "started_at_date", "started_at_time", "ended_at_date", "ended_at_time", "started_station_id", "ended_station_id", "trip_duration")
+display(timmy)
+
+tria = timmy.withColumnRenamed("started_at_date", "date")
+trial = tria.select( "trip_id", "rider_id", "rideable_type", col("date").cast(DateType()), "started_at_time", col("ended_at_date").cast(DateType()), "ended_at_time", "started_station_id", "ended_station_id", "trip_duration")
 display(trial.limit(10))
 
 traili = trial.join(date.select("date_id","date"), on = "date", how = "left")
@@ -230,3 +248,15 @@ display(dfagedonefr1.limit(10))
 
 trampoline = tramline.join(dfagedonefr1.select("rider_id","rider_age"), on = "rider_id", how = "left")
 display(trampoline)
+
+
+#Adding bike id into the table
+
+fullta = trampoline.join(bike.select("bike_id", "rideable_type"), on = "rideable_type", how = "left")
+fulltable = fullta.drop("rideable_type")
+display(fulltable)
+facttrip = fulltable.select("trip_id", "rider_id", "started_at_date_id", "ended_at_date_id", "started_at_time_id", "ended_at_time_id", "bike_id","trip_duration","rider_age", "started_station_id", "ended_station_id")
+display(facttrip)
+
+#Import dataframe into trip fact table
+facttrip.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/fact.trip")
