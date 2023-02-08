@@ -71,6 +71,7 @@ gold-dim.time:
 
 
 Successful workflow:
-<img width="687" alt="Screenshot_20230208_113338" src="https://user-images.githubusercontent.com/113461257/217529086-1a53fd69-9735-4e10-a0f8-b4a7354e3f72.png">
+![Success Workflow](https://user-images.githubusercontent.com/113461257/217536591-8d366f86-e580-4a42-bd6b-5928b1603366.png)
+
 
 
