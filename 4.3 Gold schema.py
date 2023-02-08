@@ -1,47 +1,25 @@
 # Databricks notebook source
-dbutils.fs.rm("dbfs:/tmp/Artin/Gold", True)
-
+dbutils.fs.rm("dbfs:/tmp/Artin/Gold/dim.station", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Gold/dim.date", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Gold/dim.bike", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Gold/dim.rider", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Gold/dim.time", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Gold/fact.payment", True)
+dbutils.fs.rm("dbfs:/tmp/Artin/Gold/fact.trip", True)
 
 # COMMAND ----------
 
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/dim.bike")
-
-# COMMAND ----------
-
-#Create the folders for each of the tables
-
-#Fact table
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/fact.trip")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/fact.payment")
-
-#Dim tables
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/dim.station")
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/dim.date")
-dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/dim.time")
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/dim.bike")
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/dim.rider")
+dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/dim.time")
+dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/fact.payment")
+dbutils.fs.mkdirs("dbfs:/tmp/Artin/Gold/fact.trip")
 
 # COMMAND ----------
 
-dfbike = df231.drop("trip_id","started_at","ended_at","started_station_id","ended_station_id", "rider_id")
-dfbikes = dfbike.select(dfbike.bike_id, dfbike.ridable_type)
-dfbikes.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/dim.bike")
-display(dfbikes.limit(10))
-
-# COMMAND ----------
-
-#Creating Bike Table
-from pyspark.sql.window import Window
-from pyspark.sql.functions import row_number, lit, window
-
-df23 = spark.read.load("dbfs:/tmp/Artin/Silver/trip", format = "delta")
-display(df23)
-window = Window.orderBy("rideable_type")
-df231 = df23.select(row_number().over(Window.orderBy(lit(1))).alias("bike_id"), "rideable_type")
-display(df231)
-
-# COMMAND ----------
-
+#Createing Bike Table
 from pyspark.sql.window import Window
 from pyspark.sql.functions import row_number, lit, window
 
@@ -113,22 +91,6 @@ dfdatesdone.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/d
 df = spark.read.load("dbfs:/tmp/Artin/Silver/station", format = "delta")
 display(df)
 df1 = df.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Gold/dim.station")
-
-# COMMAND ----------
-
-#Creating a column for the trip fact table
-from pyspark.sql.functions import datediff, col, current_date
-from pyspark.sql.types import StringType, IntegerType
-dfrider = spark.read.load("dbfs:/tmp/Artin/Silver/rider", format = "delta")
-dfage = dfrider.select(col("birthday"), current_date().alias("current_date"), datediff(current_date(), col("birthday")).alias("datediff"))
-dfage.show()
-
-dfagedone = dfage.select(col("datediff")/365.25).alias("age")
-display(dfagedone.limit(10))
-
-dfagedonefr = dfagedone.withColumnRenamed("(datediff / 365.25)","age")
-dfagedonefr1 = dfagedonefr.select(col("age").cast(IntegerType()), "rider_id")
-display(dfagedonefr1.limit(10))
 
 # COMMAND ----------
 
@@ -233,8 +195,6 @@ display(tramline)
 
 
 #Adding the rider_age
-from pyspark.sql.functions import datediff, col, current_date
-from pyspark.sql.types import StringType, IntegerType
 dfrider = spark.read.load("dbfs:/tmp/Artin/Silver/rider", format = "delta")
 dfage = dfrider.select(col("birthday"), current_date().alias("current_date"), datediff(current_date(), col("birthday")).alias("datediff"), "rider_id")
 dfage.show()
@@ -255,7 +215,7 @@ display(trampoline)
 fullta = trampoline.join(bike.select("bike_id", "rideable_type"), on = "rideable_type", how = "left")
 fulltable = fullta.drop("rideable_type")
 display(fulltable)
-facttrip = fulltable.select("trip_id", "rider_id", "started_at_date_id", "ended_at_date_id", "started_at_time_id", "ended_at_time_id", "bike_id","trip_duration","rider_age", "started_station_id", "ended_station_id")
+facttrip = fulltable.select("trip_id", "rider_id", "started_at_date_id", "ended_at_date_id", "started_at_time_id", "ended_at_time_id", "bike_id", col("trip_duration").cast(FloatType()),"rider_age", "started_station_id", "ended_station_id")
 display(facttrip)
 
 #Import dataframe into trip fact table

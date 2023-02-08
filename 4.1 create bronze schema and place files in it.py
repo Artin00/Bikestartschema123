@@ -1,11 +1,4 @@
 # Databricks notebook source
-dbutils.fs.rm("dbfs:/tmp/Artin/Bronze/payment", True)
-dbutils.fs.rm("dbfs:/tmp/Artin/Bronze/trip", True)
-dbutils.fs.rm("dbfs:/tmp/Artin/Bronze/rider", True)
-dbutils.fs.rm("dbfs:/tmp/Artin/Bronze/station", True)
-
-# COMMAND ----------
-
 #Creating the files for the schema/tables within the Bronze folder
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Bronze/payment")
 dbutils.fs.mkdirs("dbfs:/tmp/Artin/Bronze/trip")
@@ -68,6 +61,7 @@ stations_df.write.format("delta").mode("overwrite").save("dbfs:/tmp/Artin/Bronze
 
 # COMMAND ----------
 
+#Check to see if the Schemas have imported correctly
 dfa = spark.read.load("dbfs:/tmp/Artin/Bronze/payment", format = "delta")
 dfb = spark.read.load("dbfs:/tmp/Artin/Bronze/trip", format = "delta")
 dfc = spark.read.load("dbfs:/tmp/Artin/Bronze/rider", format = "delta")
@@ -77,4 +71,3 @@ display(dfa.limit(1))
 display(dfb.limit(1))
 display(dfc.limit(1))
 display(dfd.limit(1))
-#Rearrange the rider columns (look at the Power BI)
